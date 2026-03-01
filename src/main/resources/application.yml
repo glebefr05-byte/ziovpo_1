@@ -1,0 +1,48 @@
+spring:
+  main:
+    allow-circular-references: true
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: ${URL_DB}
+    username: ${USER_DB}
+    password: ${PASS_DB}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: true
+        format_sql: true
+  sql:
+    init:
+      mode: always
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 8443
+  ssl:
+    enabled: true
+    key-store:  ${KEY_STORE_CLASSPATH}
+    key-store-type: ${KEY_STORE_TYPE}
+    key-store-password: ${KEY_STORE_PASSWORD}
+    key-alias: ${KEY_STORE_ALIAS}
+
+jwt:
+  accessSecret: ${ACCESS_SECRET}
+  refreshSecret: ${REFRESH_SECRET}
+  accessExpiration: ${ACCESS_EXPIRATION}
+  refreshExpiration: ${REFRESH_EXPIRATION}
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+    com.example.rbpo_aeroport: DEBUG
+    org.hibernate.SQL: DEBUG

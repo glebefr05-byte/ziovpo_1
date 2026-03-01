@@ -1,0 +1,13 @@
+package com.example.rbpo_aeroport.models.enums;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public enum Permission {
+    READ("read"),
+    MODIFICATION("modify");
+
+    private final String permission;
+}

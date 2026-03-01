@@ -1,0 +1,70 @@
+on:
+   push:
+      branches:
+         - rbpo_6
+   pull_request:
+      types:  [opened, synchronize, reopened]
+      branches:
+        - rbpo_6
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: eclipse-temurin:21-jdk
+    services:
+       postgres:
+          env:
+             POSTGRES_DB: ${{secrets.NAME_DB }}
+             POSTGRES_USER: ${{secrets.USER_DB }}
+             POSTGRES_PASSWORD: ${{secrets.PASS_DB }}
+          image: postgres:18
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+          ports:
+            - 5432:5432
+            
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Run application with secrets
+        run: |
+                echo "URL_DB=${{secrets.URL_DB }}" >> .env
+                echo "USER_DB=${{secrets.USER_DB }}" >> .env
+                echo "PASS_DB=${{secrets.PASS_DB }}" >> .env
+                echo "ACCESS_SECRET=${{secrets.ACCESS_SECRET }}" >> .env
+                echo "REFRESH_SECRET=${{secrets.REFRESH_SECRET }}" >> .env
+                echo "ACCESS_EXPIRATION=${{secrets.ACCESS_EXPIRATION }}" >> .env
+                echo "REFRESH_EXPIRATION=${{secrets.REFRESH_EXPIRATION }}" >> .env
+                echo "KEY_STORE_CLASSPATH=${{secrets.KEY_STORE_CLASSPATH }}" >> .env
+                echo "KEY_STORE_TYPE=${{secrets.KEY_STORE_TYPE }}" >> .env
+                echo "KEY_STORE_PASSWORD=${{secrets.KEY_STORE_PASSWORD }}" >> .env
+                echo "KEY_STORE_ALIAS=${{secrets.KEY_STORE_ALIAS }}" >> .env
+                echo "${{secrets.KEY_STORE_SERVER }}" | base64 --decode > src/main/resources/${{secrets.KEY_STORE_ALIAS }}.jks
+
+      - name: Install PostgreSQL
+        run: |
+             apt-get update && apt-get install -y postgresql-client
+             sleep 15
+      
+      - name: Grant permissions to mvnw script
+        run: chmod u+x ./mvnw
+
+      - name: Run mvnw compile script
+        run: ./mvnw compile
+        
+      - name: Run mvnw test script
+        run: ./mvnw test
+
+      - name: Run mvnw package script
+        run: ./mvnw package
+                
+      - name: Save artifacts
+        uses: actions/upload-artifact@v4
+        with:
+                 name: rbpo_2_aeroport
+                 path: ./target/*.jar
+                 retention-days: 14
