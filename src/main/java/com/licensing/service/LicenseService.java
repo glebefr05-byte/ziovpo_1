@@ -2,10 +2,13 @@ package com.licensing.service;
 
 import com.licensing.controller.dto.*;
 import com.licensing.entities.*;
+import com.licensing.model.Ticket;
 import com.licensing.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -13,6 +16,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class LicenseService {
+
     private final LicenseRepository licenseRepository;
     private final LicenseHistoryRepository historyRepository;
     private final DeviceLicenseRepository deviceLicenseRepository;
@@ -20,15 +24,16 @@ public class LicenseService {
     private final ProductService productService;
     private final LicenseTypeService licenseTypeService;
     private final DeviceService deviceService;
+    private final TicketService ticketService;
+
+    @Value("${ticket.default-time-to-live:3600}")
+    private Integer defaultTimeToLive;
 
     @Transactional
     public License createLicense(CreateLicenseRequest request, UUID adminId) throws Exception {
         Product product = productService.getProductOrFail(request.getProductId());
-
         LicenseType licenseType = licenseTypeService.getTypeOrFail(request.getTypeId());
-
         User owner = userService.getActiveUserOrFail(request.getOwnerId());
-
         User admin = userService.getUserById(adminId);
 
         License license = new License();
@@ -75,7 +80,7 @@ public class LicenseService {
         );
 
         if (deviceLicenseRepository.existsByLicenseAndDeviceMacAddress(license, request.getDeviceMac())) {
-            return buildTicket(license);
+            return createSignedTicketResponse(license, device, currentUser);
         }
 
         if (license.getUser() != null) {
@@ -110,7 +115,7 @@ public class LicenseService {
                 "Additional activation on device: " + device.getMacAddress());
         historyRepository.save(history);
 
-        return buildTicket(license);
+        return createSignedTicketResponse(license, device, currentUser);
     }
 
     @Transactional
@@ -119,7 +124,7 @@ public class LicenseService {
                 .orElseThrow(() -> new Exception("License not found with key: " + request.getActivationKey()));
 
         if (license.getUser() == null || !license.getUser().getId().equals(userId)) {
-            throw new Exception("License does not beUUID to this user");
+            throw new Exception("License does not belong to this user");
         }
 
         LocalDate now = LocalDate.now();
@@ -150,7 +155,9 @@ public class LicenseService {
         history.setDescription("License renewed until: " + newEndingDate);
         historyRepository.save(history);
 
-        return buildTicket(license);
+        Device device = getDeviceForLicense(license, userId);
+
+        return createSignedTicketResponse(license, device, user);
     }
 
     public TicketResponse checkLicense(CheckLicenseRequest request, UUID userId) throws Exception {
@@ -163,25 +170,31 @@ public class LicenseService {
                 LocalDate.now()
         ).orElseThrow(() -> new Exception("No active license found for this device and product"));
 
-        return buildTicket(license);
+        User user = userService.getUserById(userId);
+
+        return createSignedTicketResponse(license, device, user);
+    }
+
+    private TicketResponse createSignedTicketResponse(License license, Device device, User user) {
+        try {
+            Product product = license.getProduct();
+
+            Ticket ticket = ticketService.createTicket(license, device, user, product);
+
+            return TicketResponse.fromTicketAndSignature(ticket, "signature");
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create signed ticket", e);
+        }
+    }
+
+    private Device getDeviceForLicense(License license, UUID userId) {
+        return deviceLicenseRepository.findFirstByLicenseId(license.getId())
+                .map(DeviceLicense::getDevice)
+                .orElseThrow(() -> new RuntimeException("No device found for license"));
     }
 
     private String generateLicenseCode() {
-        return "LIC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-    }
-
-    private TicketResponse buildTicket(License license) {
-        Integer activatedDevices = deviceLicenseRepository.countByLicenseId(license.getId());
-
-        return TicketResponse.builder()
-                .licenseCode(license.getCode())
-                .productName(license.getProduct().getName())
-                .licenseType(license.getType().getName())
-                .firstActivationDate(license.getFirstActivationDate())
-                .endingDate(license.getEndingDate())
-                .blocked(license.isBlocked())
-                .deviceCount(license.getDeviceCount())
-                .activatedDevices((int) activatedDevices)
-                .build();
+        return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 }

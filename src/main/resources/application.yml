@@ -46,3 +46,7 @@ logging:
         security: DEBUG
     com.example.rbpo_aeroport: DEBUG
     org.hibernate.SQL: DEBUG
+
+ticket:
+  default-time-to-live: 3600
+  max-time-to-live: 86400

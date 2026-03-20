@@ -1,6 +1,5 @@
 package com.licensing.service;
 
-import com.licensing.exception.ResourceNotFoundException;
 import com.licensing.entities.Device;
 import com.licensing.entities.User;
 import com.licensing.repository.DeviceRepository;

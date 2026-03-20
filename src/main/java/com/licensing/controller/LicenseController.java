@@ -1,10 +1,12 @@
 package com.licensing.controller;
 
 import com.licensing.controller.dto.*;
-import com.licensing.entities.User;
 import com.licensing.entities.License;
+import com.licensing.entities.User;
+import com.licensing.model.Ticket;
 import com.licensing.repository.UserRepository;
 import com.licensing.service.LicenseService;
+import com.licensing.service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -22,6 +25,7 @@ import java.util.UUID;
 public class LicenseController {
 
     private final LicenseService licenseService;
+    private final TicketService ticketService;
     private final UserRepository userRepository;
 
     private UUID getCurrentUserId() {
