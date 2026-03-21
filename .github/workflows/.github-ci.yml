@@ -74,9 +74,6 @@ jobs:
 
       - name: Run mvnw compile script
         run: ./mvnw compile
-      
-      - name: Run mvnw test script
-        run: ./mvnw test
 
       - name: Run mvnw package script
         run: ./mvnw package
