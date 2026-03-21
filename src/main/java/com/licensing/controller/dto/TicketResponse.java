@@ -15,14 +15,24 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TicketResponse {
+
     private Ticket ticket;
 
     private String signature;
 
-    public static TicketResponse fromTicketAndSignature(Ticket ticket, String signature) {
+    private String signatureAlgorithm;
+
+    private String certificateHash;
+
+    @Builder.Default
+    private LocalDateTime signatureTimestamp = LocalDateTime.now();
+
+    public static TicketResponse fromTicketAndSignature(Ticket ticket, String signature, String algorithm) {
         return TicketResponse.builder()
                 .ticket(ticket)
                 .signature(signature)
+                .signatureAlgorithm(algorithm)
+                .signatureTimestamp(LocalDateTime.now())
                 .build();
     }
 }

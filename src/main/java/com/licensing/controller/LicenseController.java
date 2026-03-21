@@ -7,8 +7,10 @@ import com.licensing.model.Ticket;
 import com.licensing.repository.UserRepository;
 import com.licensing.service.LicenseService;
 import com.licensing.service.TicketService;
+import com.licensing.signature.SignatureKeyStoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/licenses")
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class LicenseController {
 
     private final LicenseService licenseService;
     private final TicketService ticketService;
+    private final SignatureKeyStoreService signatureKeyStoreService;
     private final UserRepository userRepository;
 
     private UUID getCurrentUserId() {
@@ -68,5 +72,54 @@ public class LicenseController {
         UUID userId = getCurrentUserId();
         TicketResponse ticket = licenseService.checkLicense(request, userId);
         return ResponseEntity.ok(ticket);
+    }
+
+    @GetMapping("/public-key")
+    public ResponseEntity<Map<String, String>> getPublicKey() {
+        return ResponseEntity.ok(Map.of(
+                "publicKey", signatureKeyStoreService.getPublicKeyBase64(),
+                "algorithm", signatureKeyStoreService.getAlgorithm(),
+                "certificateHash", signatureKeyStoreService.getCertificateHash()
+        ));
+    }
+
+    @PostMapping("/verify")
+    public ResponseEntity<Map<String, Object>> verifyTicket(@RequestBody TicketResponse ticketResponse) {
+        if (ticketResponse == null || ticketResponse.getTicket() == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "valid", false,
+                    "error", "Invalid ticket data"
+            ));
+        }
+
+        boolean signatureValid = signatureKeyStoreService.verify(
+                ticketResponse.getTicket().getDataForSigning(),
+                ticketResponse.getSignature()
+        );
+
+        boolean ticketValid = ticketResponse.getTicket().isValid();
+
+        return ResponseEntity.ok(Map.of(
+                "signatureValid", signatureValid,
+                "ticketValid", ticketValid,
+                "overallValid", signatureValid && ticketValid,
+                "timestamp", java.time.LocalDateTime.now().toString()
+        ));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<TicketResponse> refreshTicket(@RequestBody Ticket oldTicket) {
+        if (oldTicket == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Ticket newTicket = ticketService.refreshTicket(oldTicket);
+
+        String signature = signatureKeyStoreService.sign(newTicket.getDataForSigning());
+        String algorithm = signatureKeyStoreService.getAlgorithm();
+
+        TicketResponse response = TicketResponse.fromTicketAndSignature(newTicket, signature, algorithm);
+
+        return ResponseEntity.ok(response);
     }
 }

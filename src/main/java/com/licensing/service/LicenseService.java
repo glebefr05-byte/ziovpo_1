@@ -4,7 +4,9 @@ import com.licensing.controller.dto.*;
 import com.licensing.entities.*;
 import com.licensing.model.Ticket;
 import com.licensing.repository.*;
+import com.licensing.signature.SignatureKeyStoreService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LicenseService {
@@ -25,6 +28,7 @@ public class LicenseService {
     private final LicenseTypeService licenseTypeService;
     private final DeviceService deviceService;
     private final TicketService ticketService;
+    private final SignatureKeyStoreService signatureKeyStoreService;
 
     @Value("${ticket.default-time-to-live:3600}")
     private Integer defaultTimeToLive;
@@ -181,9 +185,13 @@ public class LicenseService {
 
             Ticket ticket = ticketService.createTicket(license, device, user, product);
 
-            return TicketResponse.fromTicketAndSignature(ticket, "signature");
+            String signature = signatureKeyStoreService.sign(ticket.getDataForSigning());
+            String algorithm = signatureKeyStoreService.getAlgorithm();
+
+            return TicketResponse.fromTicketAndSignature(ticket, signature, algorithm);
 
         } catch (Exception e) {
+            log.error("Failed to create signed ticket for license: {}", license.getCode(), e);
             throw new RuntimeException("Failed to create signed ticket", e);
         }
     }

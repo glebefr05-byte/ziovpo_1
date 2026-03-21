@@ -51,4 +51,31 @@ public class TicketService {
                 .activatedDevicesCount(activatedDevicesCount)
                 .build();
     }
+
+    public Ticket refreshTicket(Ticket oldTicket) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime newExpiresAt = now.plusSeconds(defaultTimeToLive);
+
+        return Ticket.builder()
+                .ticketId(UUID.randomUUID())
+                .serverDateTime(now)
+                .timeToLive(defaultTimeToLive)
+                .expiresAt(newExpiresAt)
+                .activationDate(oldTicket.getActivationDate())
+                .expirationDate(oldTicket.getExpirationDate())
+                .userId(oldTicket.getUserId())
+                .userEmail(oldTicket.getUserEmail())
+                .userName(oldTicket.getUserName())
+                .deviceId(oldTicket.getDeviceId())
+                .deviceMacAddress(oldTicket.getDeviceMacAddress())
+                .deviceName(oldTicket.getDeviceName())
+                .licenseBlocked(oldTicket.isLicenseBlocked())
+                .licenseCode(oldTicket.getLicenseCode())
+                .licenseType(oldTicket.getLicenseType())
+                .productName(oldTicket.getProductName())
+                .productId(oldTicket.getProductId())
+                .deviceLimit(oldTicket.getDeviceLimit())
+                .activatedDevicesCount(oldTicket.getActivatedDevicesCount())
+                .build();
+    }
 }
