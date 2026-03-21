@@ -18,6 +18,9 @@ jobs:
       - name: Grant permissions to mvnw script
         run: chmod u+x ./mvnw
 
+      - name: Run mvnw package
+        run: ./mvnw compile
+
       - name: Upload JAR for test
         uses: actions/upload-artifact@v4
         with:
@@ -73,6 +76,12 @@ jobs:
         run: chmod u+x ./mvnw
 
       - name: Run mvnw compile script
+        run: ./mvnw compile
+
+      - name: Run mvnw test script
+        run: ./mvnw compile
+
+      - name: Run mvnw package script
         run: ./mvnw compile
               
       - name: Save artifacts
