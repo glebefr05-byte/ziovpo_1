@@ -22,7 +22,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-build
-          path: targete/*.jar
+          path: target/*.jar
 
   test:
     needs: build
@@ -74,9 +74,6 @@ jobs:
 
       - name: Run mvnw compile script
         run: ./mvnw compile
-
-      - name: Run mvnw package script
-        run: ./mvnw package
               
       - name: Save artifacts
         uses: actions/upload-artifact@v4
