@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Signature;
 import java.util.Base64;
 import java.security.MessageDigest;
@@ -20,7 +21,7 @@ public class SignatureKeyStoreService {
 
     public String sign(Object payload) {
         try {
-            byte[] canonicalBytes = canonicalizer.canonizeJson(payload).getBytes();
+            byte[] canonicalBytes = canonicalizer.canonizeJson(payload).getBytes(StandardCharsets.UTF_8);
 
             if (log.isDebugEnabled()) {
                 log.debug("Canonical JSON: {}", new String(canonicalBytes));
@@ -45,7 +46,7 @@ public class SignatureKeyStoreService {
 
     public boolean verify(Object payload, String signatureBase64) {
         try {
-            byte[] canonicalBytes = canonicalizer.canonizeJson(payload).getBytes();
+            byte[] canonicalBytes = canonicalizer.canonizeJson(payload).getBytes(StandardCharsets.UTF_8);
 
             byte[] signatureBytes = Base64.getDecoder().decode(signatureBase64);
 
