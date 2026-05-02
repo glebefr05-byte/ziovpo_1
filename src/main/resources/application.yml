@@ -11,7 +11,7 @@ spring:
   jpa:
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -46,3 +46,16 @@ logging:
         security: DEBUG
     com.example.rbpo_aeroport: DEBUG
     org.hibernate.SQL: DEBUG
+
+ticket:
+  default-time-to-live: 3600
+  max-time-to-live: 86400
+
+signature:
+  key-store-path: classpath:signing.jks
+  key-store-type: JKS
+  key-store-password: ${KEY_SIGNATURE_STORE_PASSWORD}
+  key-alias: app-signing
+  key-password: ${KEY_SIGNATURE_STORE_PASSWORD}
+  algorithm: SHA256withRSA
+  cache-keys: true

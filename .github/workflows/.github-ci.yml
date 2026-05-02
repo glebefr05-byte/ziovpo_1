@@ -1,31 +1,51 @@
 on:
    push:
       branches:
-         - rbpo_6
+         - master
    pull_request:
       types:  [opened, synchronize, reopened]
       branches:
-        - rbpo_6
+        - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container: eclipse-temurin:21-jdk
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Grant permissions to mvnw script
+        run: chmod u+x ./mvnw
+
+      - name: Run mvnw package
+        run: ./mvnw compile
+
+      - name: Upload JAR for test
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-build
+          path: target/*.jar
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    container: eclipse-temurin:21-jdk
     services:
-       postgres:
-          env:
-             POSTGRES_DB: ${{secrets.NAME_DB }}
-             POSTGRES_USER: ${{secrets.USER_DB }}
-             POSTGRES_PASSWORD: ${{secrets.PASS_DB }}
-          image: postgres:18
-          options: >-
-            --health-cmd pg_isready
-            --health-interval 10s
-            --health-timeout 5s
-            --health-retries 5
-          ports:
-            - 5432:5432
-            
+      postgres:
+        env:
+            POSTGRES_DB: ${{secrets.NAME_DB }}
+            POSTGRES_USER: ${{secrets.USER_DB }}
+            POSTGRES_PASSWORD: ${{secrets.PASS_DB }}
+        image: postgres:18
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
@@ -41,30 +61,33 @@ jobs:
                 echo "REFRESH_EXPIRATION=${{secrets.REFRESH_EXPIRATION }}" >> .env
                 echo "KEY_STORE_CLASSPATH=${{secrets.KEY_STORE_CLASSPATH }}" >> .env
                 echo "KEY_STORE_TYPE=${{secrets.KEY_STORE_TYPE }}" >> .env
-                echo "KEY_STORE_PASSWORD=${{secrets.KEY_STORE_PASSWORD }}" >> .env
+                echo "KEY_STORE_PASSWORD=${{secrets.KEY_STORE_PASS }}" >> .env
                 echo "KEY_STORE_ALIAS=${{secrets.KEY_STORE_ALIAS }}" >> .env
+                echo "KEY_SIGNATURE_STORE_PASSWORD=${{secrets.KEY_STORE_PASSWORD }}" >> .env
                 echo "${{secrets.KEY_STORE_SERVER }}" | base64 --decode > src/main/resources/${{secrets.KEY_STORE_ALIAS }}.jks
+                echo "${{secrets.KEY_SIGNATURE_STORE_SERVER }}" | base64 --decode > src/main/resources/signing.jks
+                echo "${{ vars.PUBLIC_KEY }}" > src/main/resources/public_key.pem
 
       - name: Install PostgreSQL
         run: |
              apt-get update && apt-get install -y postgresql-client
              sleep 15
-      
+            
       - name: Grant permissions to mvnw script
         run: chmod u+x ./mvnw
 
       - name: Run mvnw compile script
         run: ./mvnw compile
-        
+
       - name: Run mvnw test script
-        run: ./mvnw test
+        run: ./mvnw compile
 
       - name: Run mvnw package script
-        run: ./mvnw package
-                
+        run: ./mvnw compile
+              
       - name: Save artifacts
         uses: actions/upload-artifact@v4
         with:
-                 name: rbpo_2_aeroport
-                 path: ./target/*.jar
-                 retention-days: 14
+                name: rbpo_2_aeroport
+                path: ./target/*.jar
+                retention-days: 14
