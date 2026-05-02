@@ -66,6 +66,7 @@ jobs:
                 echo "KEY_SIGNATURE_STORE_PASSWORD=${{secrets.KEY_STORE_PASSWORD }}" >> .env
                 echo "${{secrets.KEY_STORE_SERVER }}" | base64 --decode > src/main/resources/${{secrets.KEY_STORE_ALIAS }}.jks
                 echo "${{secrets.KEY_SIGNATURE_STORE_SERVER }}" | base64 --decode > src/main/resources/signing.jks
+                echo "${{ vars.PUBLIC_KEY }}" > src/main/resources/public_key.pem
 
       - name: Install PostgreSQL
         run: |
