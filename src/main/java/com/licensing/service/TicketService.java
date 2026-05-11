@@ -37,18 +37,8 @@ public class TicketService {
                 .expirationDate(license.getEndingDate() != null ?
                         license.getEndingDate().atStartOfDay() : null)
                 .userId(user.getId())
-                .userEmail(user.getEmail())
-                .userName(user.getName())
                 .deviceId(device.getId())
-                .deviceMacAddress(device.getMacAddress())
-                .deviceName(device.getName())
                 .licenseBlocked(license.isBlocked())
-                .licenseCode(license.getCode())
-                .licenseType(license.getType() != null ? license.getType().getName() : null)
-                .productName(product != null ? product.getName() : null)
-                .productId(product != null ? product.getId() : null)
-                .deviceLimit(license.getDeviceCount())
-                .activatedDevicesCount(activatedDevicesCount)
                 .build();
     }
 
@@ -64,18 +54,8 @@ public class TicketService {
                 .activationDate(oldTicket.getActivationDate())
                 .expirationDate(oldTicket.getExpirationDate())
                 .userId(oldTicket.getUserId())
-                .userEmail(oldTicket.getUserEmail())
-                .userName(oldTicket.getUserName())
                 .deviceId(oldTicket.getDeviceId())
-                .deviceMacAddress(oldTicket.getDeviceMacAddress())
-                .deviceName(oldTicket.getDeviceName())
                 .licenseBlocked(oldTicket.isLicenseBlocked())
-                .licenseCode(oldTicket.getLicenseCode())
-                .licenseType(oldTicket.getLicenseType())
-                .productName(oldTicket.getProductName())
-                .productId(oldTicket.getProductId())
-                .deviceLimit(oldTicket.getDeviceLimit())
-                .activatedDevicesCount(oldTicket.getActivatedDevicesCount())
                 .build();
     }
 }

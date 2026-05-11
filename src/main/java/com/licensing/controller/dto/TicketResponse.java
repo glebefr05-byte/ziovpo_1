@@ -1,5 +1,6 @@
 package com.licensing.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.licensing.model.Ticket;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ public class TicketResponse {
 
     private String signature;
 
+    @JsonIgnore
     private String signatureAlgorithm;
 
     private String certificateHash;

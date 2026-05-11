@@ -5,8 +5,10 @@ import com.licensing.entities.MalwareSignature;
 import com.licensing.model.enums.SignatureStatus;
 import com.licensing.repository.MalwareSignatureRepository;
 import com.licensing.signature.SignatureKeyStoreService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.MessageDigest;
@@ -23,8 +25,15 @@ public class BinarySignatureService {
     private final DataSerializer dataSerializer;
     private final SignatureKeyStoreService signingService;
 
+    private static String STUDENT_NAME;
+
+    @Value("${jwt.magicname}")
+    private String studentname;
+
+    @PostConstruct
+    private void init() { STUDENT_NAME = this.studentname;}
+
     private static final short VERSION = 1;
-    private static final String STUDENT_SURNAME = "EFREMOV";
 
     public byte[] getFullManifest() throws Exception {
         List<MalwareSignature> signatures = signatureRepository.findByStatus(SignatureStatus.ACTUAL);
@@ -94,7 +103,7 @@ public class BinarySignatureService {
         }
 
         Manifest manifest = Manifest.builder()
-                .magic("MF-" + STUDENT_SURNAME)
+                .magic("MF-" + STUDENT_NAME)
                 .version(VERSION)
                 .exportType(exportType)
                 .generatedAtEpochMillis(Instant.now().toEpochMilli())
@@ -103,6 +112,8 @@ public class BinarySignatureService {
                 .dataSha256(dataSha256)
                 .entries(entries)
                 .build();
+
+        System.out.println(manifest);
 
         byte[] unsignedManifest = manifestSerializer.serializeWithoutSignature(manifest);
 

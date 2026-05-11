@@ -13,13 +13,13 @@ public class DeviceService {
     private final DeviceRepository deviceRepository;
 
     public Device findDeviceByMac(String macAddress) throws Exception {
-        return deviceRepository.findByMacAddress(macAddress)
+        return deviceRepository.findFirstByMacAddress(macAddress)
                 .orElseThrow(() -> new Exception("Device not found with MAC: " + macAddress));
     }
 
     @Transactional
     public Device getOrCreateDevice(String macAddress, String deviceName, User user) {
-        return deviceRepository.findByMacAddress(macAddress)
+        return deviceRepository.findFirstByMacAddress(macAddress)
                 .orElseGet(() -> {
                     Device newDevice = new Device();
                     newDevice.setMacAddress(macAddress);

@@ -38,6 +38,7 @@ jwt:
   refreshSecret: ${REFRESH_SECRET}
   accessExpiration: ${ACCESS_EXPIRATION}
   refreshExpiration: ${REFRESH_EXPIRATION}
+  magicname: ${MAGIC_NAME}
 
 logging:
   level:
@@ -59,3 +60,9 @@ signature:
   key-password: ${KEY_SIGNATURE_STORE_PASSWORD}
   algorithm: SHA256withRSA
   cache-keys: true
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+  bucket-name: signature-files

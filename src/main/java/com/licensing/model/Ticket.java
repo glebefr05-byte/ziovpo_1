@@ -38,29 +38,9 @@ public class Ticket {
 
     private UUID userId;
 
-    private String userEmail;
-
-    private String userName;
-
     private UUID deviceId;
 
-    private String deviceMacAddress;
-
-    private String deviceName;
-
     private boolean licenseBlocked;
-
-    private String licenseCode;
-
-    private String licenseType;
-
-    private String productName;
-
-    private UUID productId;
-
-    private Integer deviceLimit;
-
-    private Integer activatedDevicesCount;
 
     public boolean isTimeValid() {
         if (expiresAt == null || serverDateTime == null) {
@@ -95,18 +75,8 @@ public class Ticket {
         data.put("activationDate", activationDate != null ? activationDate.toString() : null);
         data.put("expirationDate", expirationDate != null ? expirationDate.toString() : null);
         data.put("userId", userId != null ? userId.toString() : null);
-        data.put("userEmail", userEmail);
-        data.put("userName", userName);
         data.put("deviceId", deviceId != null ? deviceId.toString() : null);
-        data.put("deviceMacAddress", deviceMacAddress);
-        data.put("deviceName", deviceName);
         data.put("licenseBlocked", licenseBlocked);
-        data.put("licenseCode", licenseCode);
-        data.put("licenseType", licenseType);
-        data.put("productName", productName);
-        data.put("productId", productId != null ? productId.toString() : null);
-        data.put("deviceLimit", deviceLimit);
-        data.put("activatedDevicesCount", activatedDevicesCount);
 
         return data;
     }

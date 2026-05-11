@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Repository
 public interface LicenseRepository extends JpaRepository<License, UUID> {
-    Optional<License> findByCode(String code);
+    Optional<License> findFirstByCode(String code);
 
     @Query("SELECT l FROM License l " +
             "JOIN DeviceLicense dl ON dl.license.id = l.id " +

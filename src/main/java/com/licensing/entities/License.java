@@ -1,5 +1,6 @@
 package com.licensing.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,10 +30,12 @@ public class License {
     private LicenseType type;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "user_id")
     private User user;
 

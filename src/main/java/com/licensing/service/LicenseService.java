@@ -64,7 +64,7 @@ public class LicenseService {
 
     @Transactional
     public TicketResponse activateLicense(ActivateLicenseRequest request, UUID userId) throws Exception {
-        License license = licenseRepository.findByCode(request.getActivationKey())
+        License license = licenseRepository.findFirstByCode(request.getActivationKey())
                 .orElseThrow(() -> new Exception("License not found with key: " + request.getActivationKey()));
 
         if (license.isBlocked()) {
@@ -124,7 +124,7 @@ public class LicenseService {
 
     @Transactional
     public TicketResponse renewLicense(RenewLicenseRequest request, UUID userId) throws Exception {
-        License license = licenseRepository.findByCode(request.getActivationKey())
+        License license = licenseRepository.findFirstByCode(request.getActivationKey())
                 .orElseThrow(() -> new Exception("License not found with key: " + request.getActivationKey()));
 
         if (license.getUser() == null || !license.getUser().getId().equals(userId)) {
@@ -197,7 +197,7 @@ public class LicenseService {
     }
 
     private Device getDeviceForLicense(License license, UUID userId) {
-        return deviceLicenseRepository.findFirstByLicenseId(license.getId())
+        return deviceLicenseRepository.findTopByLicenseIdOrderByActivationDateAsc(license.getId())
                 .map(DeviceLicense::getDevice)
                 .orElseThrow(() -> new RuntimeException("No device found for license"));
     }

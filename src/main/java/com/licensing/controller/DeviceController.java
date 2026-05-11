@@ -54,7 +54,7 @@ public class DeviceController {
 
     @GetMapping("/mac/{macAddress}")
     public ResponseEntity<DeviceDto> getDeviceByMac(@PathVariable String macAddress) {
-        Device device = deviceRepository.findByMacAddress(macAddress)
+        Device device = deviceRepository.findFirstByMacAddress(macAddress)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Device not found with MAC: " + macAddress));
         return ResponseEntity.ok(convertToDto(device));

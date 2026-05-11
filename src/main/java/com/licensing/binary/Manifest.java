@@ -8,7 +8,6 @@ import java.time.Instant;
 @Data
 @Builder
 public class Manifest {
-    // Заголовок
     private String magic;
     private short version;
     private byte exportType;

@@ -2,6 +2,7 @@ package com.licensing.binary;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -10,6 +11,9 @@ import org.springframework.stereotype.Component;
 public class DataSerializer {
 
     private final BinaryWriter binaryWriter;
+
+    @Value("${jwt.magicname}")
+    private String studentname;
 
     public byte[] serializeEntry(DataEntry entry) {
         binaryWriter.reset();
@@ -46,13 +50,23 @@ public class DataSerializer {
         binaryWriter.writeUInt32(entries.length);
 
         for (DataEntry entry : entries) {
-            binaryWriter.writeFixedBytes(serializeEntry(entry));
+            writeEntry(this.binaryWriter, entry);
         }
 
         return binaryWriter.toByteArray();
     }
 
+    private void writeEntry(BinaryWriter writer, DataEntry entry) {
+        writer.writeString(entry.getThreatName());
+        writer.writeBytes(entry.getFirstBytes());
+        writer.writeBytes(entry.getRemainderHash());
+        writer.writeUInt64(entry.getRemainderLength());
+        writer.writeString(entry.getFileType());
+        writer.writeUInt64(entry.getOffsetStart());
+        writer.writeUInt64(entry.getOffsetEnd());
+    }
+
     private String getStudentSurname() {
-        return "EFREMOV";
+        return studentname;
     }
 }

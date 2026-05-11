@@ -19,5 +19,5 @@ public interface DeviceLicenseRepository extends JpaRepository<DeviceLicense, UU
     boolean existsByLicenseAndDeviceMacAddress(License license, String macAddress);
 
     @Query("SELECT dl FROM DeviceLicense dl WHERE dl.license.id = :licenseId ORDER BY dl.activationDate ASC")
-    Optional<DeviceLicense> findFirstByLicenseId(@Param("licenseId") UUID licenseId);
+    Optional<DeviceLicense> findTopByLicenseIdOrderByActivationDateAsc(@Param("licenseId") UUID licenseId);
 }
