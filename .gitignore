@@ -36,3 +36,4 @@ build/
 *.jks
 *.crt
 *.csr
+/minio_data
